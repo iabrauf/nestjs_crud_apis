@@ -1,9 +1,20 @@
-import { BadRequestException, Body, Controller, Get, Param, Post, Put } from '@nestjs/common';
+import {
+    BadRequestException,
+    Body,
+    Controller,
+    Delete,
+    Get,
+    NotFoundException,
+    Param,
+    Post,
+    Put,
+} from '@nestjs/common';
 import { TaskService } from './task.service';
 import { Task } from 'src/interface/task.interface';
-import mongoose from 'mongoose';
+import { Message } from 'src/interface/task.interface';
 
-@Controller('task')
+
+@Controller('tasks')
 export class TaskController {
     constructor(private readonly taskService: TaskService) { }
     @Get()
@@ -11,31 +22,39 @@ export class TaskController {
         try {
             return this.taskService.findAll();
         } catch (error) {
-            throw new BadRequestException('Something bad happened')
+            throw new BadRequestException('Something bad happened');
         }
     }
     @Get(':id')
     getOneTask(@Param('id') id: string): Promise<Task> {
-        if (!mongoose.isValidObjectId(id)) {
-            throw new BadRequestException('id is not valid')
-        }
-        return this.taskService.getOne(id)
+        return this.taskService.getOne(id);
     }
+
     @Post()
-    createTask(@Body() task: Task): Promise<Task> {
-        if (!task.name || !task.completed) {
-            throw new BadRequestException('Name or Completed is missing')
-        }
-        return this.taskService.createTask(task);
+    async createTask(@Body() task: Task): Promise<Task> {
+        return await this.taskService.createTask(task);
     }
-    @Put(":id")
-    updateTask(@Param('id') id: string, @Body() task: Task) {
-        if (!mongoose.isValidObjectId(id)) {
-            throw new BadRequestException('id is not valid')
+
+    @Put(':id')
+    updateTask(
+        @Param('id') id: string,
+        @Body() task: Task
+    ) {
+        return this.taskService.updateTask(id, task);
+    }
+
+    @Delete(':id')
+    async deleteTask(@Param('id') id: string): Promise<Message> {
+        try {
+            await this.taskService.deleteTask(id);
+            return { success: true, message: `Record deleted successfully.` };
+        } catch (error) {
+            if (error instanceof NotFoundException) {
+                throw new NotFoundException(error.message);
+            }
+            else {
+                throw new BadRequestException(error.message)
+            }
         }
-        if (!task.name) {
-            throw new BadRequestException('Name or Completed is missing')
-        }
-        return this.taskService.updateTask(id, task)
     }
 }
