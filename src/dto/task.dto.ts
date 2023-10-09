@@ -1,7 +1,10 @@
 import { ApiProperty } from '@nestjs/swagger';
 export class TaskDto {
     @ApiProperty()
-    name: string;
+    username: string;
+
+    @ApiProperty()
+    task: string;
 
     @ApiProperty()
     completed: boolean;

@@ -1,6 +1,7 @@
 export interface Task {
     id?: string,
-    name: string,
+    username: string,
+    task: string,
     completed: boolean
 }
 
@@ -13,3 +14,4 @@ export interface Message {
     success: boolean;
     message: string;
 }
+
